@@ -1,0 +1,31 @@
+.flex-container {
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  height: 70vh;
+}
+
+.card-img-top {
+  background-color: aqua;
+  padding: 10px;
+}
+
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo-img {
+  width: auto;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 5px; /* Sedikit melengkung */
+}
+
+/* Styling untuk foto profil */
+.profile-pic {
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+  border-radius: 50%; /* Membuat lingkaran sempurna */
+  border: 2px solid #e2e6ea;
+}
