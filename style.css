@@ -88,6 +88,20 @@ body.sidebar-hidden .main-content {
   background-color: #456882;
 }
 
+#outputResult {
+    overflow-y: hidden;
+    resize: none; 
+    min-height: 100px; 
+    transition: height 0.2s ease; 
+}
+
+#inputForm {
+    overflow-y: hidden; 
+    resize: none;       
+    min-height: 100px;  
+    transition: height 0.1s ease; 
+}
+
 @media (max-width: 768px) {
   .sidebar {
     left: -250px;

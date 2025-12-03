@@ -47,6 +47,11 @@ toggleBtn.addEventListener("click", function () {
 validateBtn.addEventListener("click", async function runAutoTest() {
 
   const bodyData = document.getElementById("inputBody").value;
+    const statusBadge = document.getElementById('statusBadge');
+statusBadge.style.display = 'none';
+    statusBadge.className = 'badge rounded-pill';
+
+
   console.log("Body:", bodyData);
     
     const targetUrl = "http://localhost:8080/interbank/req/body/case7";
@@ -73,12 +78,50 @@ validateBtn.addEventListener("click", async function runAutoTest() {
         console.log("Status Code:", httpStatus);
         console.log("Response Data:", resultJson);
 
-        outputBox.value = `Status: ${httpStatus}\n\n` + JSON.stringify(resultJson, null, 2);
+        statusBadge.style.display = 'inline-block'; // 
+        statusBadge.textContent = `Status Koneksi: ${httpStatus}`; 
+
+        if (httpStatus === 200) {
+            statusBadge.classList.add('bg-success');
+        } else {
+            statusBadge.classList.add('bg-danger');
+        }
+
+        outputBox.value = `Status: ${resultJson.status}\n\n`+`Message: ${resultJson.message}`;
+        autoResize('outputResult');
 
     } catch (error) {
+
+      statusBadge.style.display = 'inline-block';
+        statusBadge.textContent = `Status Koneksi: ${httpStatus}`;
+        statusBadge.classList.add('bg-danger');
         console.error("Error:", error);
         outputBox.value = "Gagal melakukan request: " + error.message;
+        autoResize('outputResult');
     }
 })
+
+function autoResize(elementId) {
+    const textarea = document.getElementById(elementId);
+    if (textarea) {
+
+        textarea.style.height = 'auto'; 
+        textarea.style.height = (textarea.scrollHeight + 10) + 'px'; 
+    }
+}
+
+const allTextareas = document.querySelectorAll('textarea.form-control');
+
+allTextareas.forEach(textarea => {
+    // Tambahkan style css lewat JS (opsional, bisa juga via CSS file)
+    textarea.style.overflowY = 'hidden';
+    textarea.style.resize = 'none';
+
+    // Pasang event listener ke semuanya
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+});
 
 
