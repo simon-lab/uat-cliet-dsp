@@ -18,15 +18,14 @@
   width: auto;
   height: 40px;
   object-fit: cover;
-  border-radius: 5px; /* Sedikit melengkung */
+  border-radius: 5px;
 }
 
-/* Styling untuk foto profil */
 .profile-pic {
   width: 35px;
   height: 35px;
   object-fit: cover;
-  border-radius: 50%; /* Membuat lingkaran sempurna */
+  border-radius: 50%;
   border: 2px solid #e2e6ea;
 }
 
@@ -42,4 +41,76 @@
 .content-header {
   position: relative;
   padding: 15px 15px 0 15px;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 48px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
+}
+
+.sidebar {
+  height: 100vh;
+  width: 250px;
+  position: fixed;
+  top: 56px;
+  left: 0;
+  background-color: #456882;
+  border-right: 1px solid #dee2e6;
+  transition: all 0.3s ease;
+  z-index: 900;
+  overflow-y: auto;
+}
+
+.main-content {
+  margin-left: 250px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+body.sidebar-hidden .sidebar {
+  left: -250px;
+}
+
+#sidebarToggle {
+  background-color: #dee2e6;
+}
+
+body.sidebar-hidden .main-content {
+  margin-left: 0;
+}
+
+.list-group-item {
+  background-color: #456882;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    left: -250px;
+  }
+  .main-content {
+    margin-left: 0;
+  }
+
+  body.sidebar-show .sidebar {
+    left: 0;
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 800;
+  }
+  body.sidebar-show .sidebar-overlay {
+    display: block;
+  }
 }
