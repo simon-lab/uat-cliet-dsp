@@ -89,31 +89,36 @@ body.sidebar-hidden .main-content {
 }
 
 #outputResult {
-    overflow-y: hidden;
-    resize: none; 
-    min-height: 100px; 
-    transition: height 0.2s ease; 
+  overflow-y: hidden;
+  resize: none;
+  min-height: 100px;
+  transition: height 0.2s ease;
 }
 
 #inputForm {
-    overflow-y: hidden; 
-    resize: none;       
-    min-height: 100px;  
-    transition: height 0.1s ease; 
+  overflow-y: hidden;
+  resize: none;
+  min-height: 100px;
+  transition: height 0.1s ease;
 }
 
 @media (max-width: 768px) {
+  /* 1. Sembunyikan Sidebar di HP */
   .sidebar {
     left: -250px;
   }
+
+  /* 2. Konten Utama Full Width di HP */
   .main-content {
     margin-left: 0;
   }
 
+  /* 3. Saat tombol ditekan (Class ditambah via JS) */
   body.sidebar-show .sidebar {
-    left: 0;
+    left: 0; /* Munculkan sidebar */
   }
 
+  /* Overlay background gelap */
   .sidebar-overlay {
     display: none;
     position: fixed;
@@ -122,7 +127,7 @@ body.sidebar-hidden .main-content {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 800;
+    z-index: 1030;
   }
   body.sidebar-show .sidebar-overlay {
     display: block;
