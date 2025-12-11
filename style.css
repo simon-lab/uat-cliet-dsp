@@ -5,8 +5,15 @@
   height: 70vh;
 }
 
+.result-box-flexible {
+  height: auto; /* Biarkan tinggi mengikuti isi */
+  min-height: 0; /* Reset minimal height */
+  overflow: visible; /* Pastikan konten tidak terpotong */
+  transition: height 0.3s; /* Opsional: transisi halus jika browser support */
+}
+
 .card-img-top {
-  background-color: aqua;
+  background-color: #1b3c53;
   padding: 10px;
 }
 

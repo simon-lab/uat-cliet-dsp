@@ -26,7 +26,7 @@ document.addEventListener("input", function (e) {
 
 // DATA DRIVEN TESTING (Generator HTML)
 
-const testCases = [
+const interbankTestCases = [
   {
     id: "1",
     expected: 'Error Code: 401xx01\nError Message: "Access Token Invalid"',
@@ -84,39 +84,195 @@ const testCases = [
   },
 ];
 
-const container = document.getElementById("testCaseContainer");
+const balanceTestCases = [
+  {
+    id: "1",
+    expected: 'Error Code: 401xx01\nError Message: "Access Token Invalid"',
+  },
+  {
+    id: "2",
+    expected: 'Error Code: 401xx00\nError Message: "Unauthorized Signature"',
+  },
+  {
+    id: "3",
+    expected:
+      'Error Code: 400xx02\nError Message: "Invalid Mandatory Fields {.....}"',
+  },
+  {
+    id: "4",
+    expected:
+      'Error Code: 400xx01\nError Message: "Invalid Field Format {.....}"',
+  },
+  {
+    id: "5",
+    expected: 'Error Code: 409xx00\nError Message: "Conflict"',
+  },
+  {
+    id: "6",
+    expected: 'Response Code: 2001100\nResponse Message: "Successful"',
+  },
+  {
+    id: "7",
+    expected: 'Response Code: 2001100\nResponse Message: "Successful"',
+  },
+  {
+    id: "8",
+    expected: 'Response Code: 4031118\nError Message: "Account Inactive"',
+  },
+  {
+    id: "9",
+    expected:
+      'Response Code: 4011100\nResponse Message: " Invalid Access Token Scope"',
+  },
+  {
+    id: "10",
+    expected: 'Response Code: 4031105\nResponse Message: "Do Not Honor"',
+  },
+  {
+    id: "11",
+    expected: 'Error Code: 4011102\nError Message: "Invalid Customer Token"',
+  },
+];
 
+// --- STATE MANAGEMENT ---
+// Default category
+let currentCategory = "interbank";
+
+// --- DOM ELEMENTS ---
+const container = document.getElementById("testCaseContainer");
+const btnInterbank = document.getElementById("interbankBtn");
+const btnBalance = document.getElementById("balanceBtn");
+
+// // Listener untuk Channel ID Global
+// const partnerId = document.getElementById("partnerId")?.value || "";
+// if (partnerId) {
+//   partnerId.addEventListener("input", function () {
+//     // Cari semua textarea partner ID yang ada di halaman dan update nilainya
+//     document.querySelectorAll('[id^="inputPartnerID_"]').forEach((el) => {
+//       el.value = this.value;
+//     });
+//   });
+// }
+
+// // Listener untuk Channel ID Global
+// const channelId = document.getElementById("channelId").value || "";
+// if (channelId) {
+//   channelId.addEventListener("input", function () {
+//     // Cari semua textarea channel ID yang ada di halaman dan update nilainya
+//     document.querySelectorAll('[id^="inputChannelID_"]').forEach((el) => {
+//       el.value = this.value;
+//     });
+//   });
+// }
+
+// --- EVENT LISTENERS ---
+if (btnInterbank) {
+  btnInterbank.addEventListener("click", function (e) {
+    e.preventDefault();
+    currentCategory = "interbank";
+    pageTitle.innerText = "Interbank Transfer Test";
+    renderTestCases(); // Re-render
+  });
+}
+
+if (btnBalance) {
+  btnBalance.addEventListener("click", function (e) {
+    e.preventDefault();
+    currentCategory = "balance";
+    pageTitle.innerText = "Balance Services Test";
+    renderTestCases(); // Re-render
+  });
+}
+
+// Listener Global Input (Partner & Channel ID)
+// Script ini akan mengupdate semua input case secara otomatis saat Anda mengetik di input global
+const globalInputs = ["partnerId", "channelId"];
+
+globalInputs.forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener("input", function () {
+      // Tentukan target ID prefix berdasarkan input global mana yang diketik
+      const targetPrefix =
+        id === "partnerId" ? "inputPartnerID_" : "inputChannelID_";
+
+      // Update semua textarea yang relevan di dalam list case
+      document
+        .querySelectorAll(`[id^="${targetPrefix}"]`)
+        .forEach((textarea) => {
+          textarea.value = this.value;
+        });
+    });
+  }
+});
+
+let typeAPI = "";
 function renderTestCases() {
   if (!container) return;
 
+  // 1. Determine which data to use based on state
+  let dataToRender = [];
+  let prefix = "";
+  let title = "";
+
+  const partnerElem = document.getElementById("partnerId");
+  const channelElem = document.getElementById("channelId");
+
+  const partnerId = partnerElem ? partnerElem.value : "";
+  const channelId = channelElem ? channelElem.value : "";
+
+  if (currentCategory === "interbank") {
+    dataToRender = interbankTestCases;
+    prefix = "8.";
+    title = "Interbank Transfer Test";
+    typeAPI = "interbank";
+  } else {
+    dataToRender = balanceTestCases;
+    prefix = "3.";
+    title = "Balance Services Test";
+    typeAPI = "balance";
+  }
+
+  console.log(`Ini TypeAPI nya:`, typeAPI);
+  // 2. Generate HTML
   let allHtml = "";
 
-  testCases.forEach((item) => {
+  dataToRender.forEach((item) => {
     allHtml += `
-    <div class="col-12 col-md-1 d-flex align-items-center justify-content-left fw-bold">
-            Case 8.${item.id}
-        </div>
-    <div class="row border-bottom pb-4 mb-4" id="caseRow_${item.id}">
-
-        <div class="col-12 col-md-2 mb-3">
-            <label class="form-label fw-bold">Expected Result:</label>
-            <div class="small">
-                <textarea class="form-control bg-light" rows="4" disabled>${item.expected}</textarea>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-3 mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <label class="form-label fw-bold mb-0">Header Request:</label>
-                <div class="d-flex gap-2">
-                    <span id="jsonOption_${item.id}" onclick="toggleMode('${item.id}', 'json')" class="btn badge rounded-pill bg-primary" style="cursor:pointer;">Json</span>
-                    <span id="manualOption_${item.id}" onclick="toggleMode('${item.id}', 'manual')" class="btn badge rounded-pill bg-secondary" style="cursor:pointer;">Manual</span>
-                </div>
+    <div class="row"">
+                <div class="col-12 col-md-1 d-flex align-items-center justify-content-left fw-bold">
+                Case ${prefix}${item.id}
             </div>
             
-            <textarea id="inputHeader_${item.id}" class="form-control" rows="4" placeholder="Masukkan Header JSON"></textarea>
+            <div class="col-12 col-md-4 d-flex align-items-center justify-content-left fw-bold mb-3">
+            <div class="me-3">
+            <label class="form-label fw-bold text-nowrap">Url Endpoint:</label>
+            </div>
+                <textarea class="form-control" id="urlEndpoint_${item.id}" rows="1"></textarea>
+            </div>
+            </div>
+            </div>
+        <div class="row border-bottom pb-4 mb-4" id="caseRow_${item.id}">
 
-            <div id="manualInputGroup_${item.id}" class="manual-input-group mt-2" hidden>
+            <div class="col-12 col-md-2 mb-3">
+                <label class="form-label fw-bold">Expected Result:</label>
+                <div class="small">
+                    <textarea class="form-control bg-light" rows="4" disabled>${item.expected}</textarea>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="form-label fw-bold mb-0">Header Request:</label>
+                    <div class="d-flex gap-2">
+                        <span id="jsonOption_${item.id}" onclick="toggleMode('${item.id}', 'json')" class="btn badge rounded-pill bg-primary" style="cursor:pointer;">Json</span>
+                        <span id="manualOption_${item.id}" onclick="toggleMode('${item.id}', 'manual')" class="btn badge rounded-pill bg-secondary" style="cursor:pointer;">Manual</span>
+                    </div>
+                </div>
+                
+                <textarea id="inputHeader_${item.id}" class="form-control" rows="4" placeholder="Header JSON"></textarea>
+
+                <div id="manualInputGroup_${item.id}" class="manual-input-group mt-2" hidden>
                 <div class="manual-input-group">
             <div class="row align-items-center mb-1">
               <label
@@ -200,7 +356,7 @@ function renderTestCases() {
                   rows="1"
                   placeholder="Masukkan X-PARTNER-ID"
                   disabled
-                ></textarea>
+                >${partnerId}</textarea>
               </div>
             </div>
 
@@ -235,36 +391,33 @@ function renderTestCases() {
                   rows="1"
                   placeholder="Masukkan CHANNEL-ID"
                   disabled
-                ></textarea>
+                >${channelId}</textarea>
               </div>
             </div>
           </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-2 mb-3">
+                <label class="form-label fw-bold">Body Request:</label>
+                <textarea id="inputBody_${item.id}" class="form-control" rows="4" placeholder="Body JSON"></textarea>
+            </div>
+
+            <div class="col-12 col-md-2 mb-3">
+                <label class="form-label fw-bold small">Response:</label>
+                <textarea id="inputResponse_${item.id}" class="form-control" rows="4" placeholder="Response API"></textarea>
+            </div>
+
+            <div class="col-12 col-md-1 align-items-center mb-3 mt-5">
+                <button type="button" onclick="runValidation('${item.id}')" class="btn btn-primary w-100">Validate</button>
+            </div>
+
+            <div class="col-12 col-md-2 mb-3">
+                 <label class="form-label fw-bold small">Log:</label>
+                 <div id="outputResult_${item.id}" class="form-control bg-light" style="min-height: 120px; height: auto; overflow-y: auto; font-size: 0.8rem;"></div>
             </div>
         </div>
-
-        <div class="col-12 col-md-2 mb-3">
-            <label class="form-label fw-bold">Body Request:</label>
-            <textarea id="inputBody_${item.id}" class="form-control" rows="4" placeholder="Masukkan Body Request"></textarea>
-        </div>
-
-        <div class="col-12 col-md-2 mb-3">
-            <label class="form-label fw-bold">Response:</label>
-            <textarea id="inputResponse_${item.id}" class="form-control" rows="4" placeholder="Response API"></textarea>
-        </div>
-
-        <div class="col-12 col-md-1 align-items-center mb-3 mt-5">
-            <button type="button" onclick="runValidation('${item.id}')" class="btn btn-primary w-100">Validate</button>
-        </div>
-
-        <div class="col-12 col-md-2 mb-3">
-             <label class="form-label fw-bold small">Validation Log:</label>
-             <div id="outputResult_${item.id}" 
-                  class="form-control bg-light" 
-                  style="height: 120px; overflow-y: auto; font-family: monospace; font-size: 0.8rem;">
-             </div>
-        </div>
-    </div>
-    `;
+        `;
   });
 
   container.innerHTML = allHtml;
@@ -302,40 +455,86 @@ function toggleMode(id, mode) {
 async function runValidation(id) {
   // 1. AMBIL ELEMEN INPUT
   const jsonHeaderBox = document.getElementById(`inputHeader_${id}`);
+  const manualGroupBox = document.getElementById(`manualInputGroup_${id}`);
+
   const bodyInputBox = document.getElementById(`inputBody_${id}`);
   const responseInputBox = document.getElementById(`inputResponse_${id}`);
 
-  // Perhatikan: Ini sekarang adalah DIV, bukan Textarea lagi
   const resultBox = document.getElementById(`outputResult_${id}`);
 
   const inputElements = [jsonHeaderBox, bodyInputBox, responseInputBox];
 
   // 2. RESET STYLE SEBELUM MULAI
+  // Hapus validasi lama
   inputElements.forEach((el) => el.classList.remove("is-valid", "is-invalid"));
+  // Hapus juga validasi di dalam manual group (jika ada)
+  manualGroupBox
+    .querySelectorAll("textarea")
+    .forEach((el) => el.classList.remove("is-valid", "is-invalid"));
 
-  // UI Loading (Pakai innerHTML)
+  // UI Loading
   resultBox.innerHTML =
     '<span class="text-primary spinner-border spinner-border-sm"></span> Validating...';
 
-  // Ambil Value
-  const headerVal = jsonHeaderBox.value;
+  // 3. LOGIKA PENENTUAN HEADER (MANUAL vs JSON)
+  let headerVal = "";
+
+  // Cek apakah mode JSON sedang sembunyi? (Artinya mode Manual aktif)
+  const isManualMode = jsonHeaderBox.style.display === "none";
+
+  if (isManualMode) {
+    // --- MODE MANUAL: GABUNGKAN FIELD JADI JSON ---
+    // Ambil value dari masing-masing input manual berdasarkan ID uniknya
+    const contentType = document.getElementById(`inputContentType_${id}`).value;
+    const authorization = document.getElementById(
+      `inputAuthorization_${id}`
+    ).value;
+    const timestamp = document.getElementById(`inputTimestamp_${id}`).value;
+    const signature = document.getElementById(`inputSignature_${id}`).value;
+    const partnerID = document.getElementById(`inputPartnerID_${id}`).value;
+    const externalID = document.getElementById(`inputExternalID_${id}`).value;
+    const channelID = document.getElementById(`inputChannelID_${id}`).value;
+
+    // Buat Object JS
+    const headerObj = {
+      "Content-Type": contentType,
+      Authorization: authorization,
+      "X-TIMESTAMP": timestamp,
+      "X-SIGNATURE": signature,
+      "X-PARTNER-ID": partnerID,
+      "X-EXTERNAL-ID": externalID,
+      "CHANNEL-ID": channelID,
+    };
+
+    // Ubah Object jadi String JSON (Pretty Print)
+    headerVal = JSON.stringify(headerObj, null, 2);
+
+    console.log(`[Case ${id}] Generated Header JSON from Manual:`, headerVal);
+  } else {
+    // --- MODE JSON: AMBIL LANGSUNG ---
+    headerVal = jsonHeaderBox.value;
+    console.log(`[Case ${id}] Generated Header JSON from json:`, headerVal);
+  }
+
+  // Ambil Body & Response
   const bodyVal = bodyInputBox.value;
   const responseVal = responseInputBox.value;
 
-  // 3. KONFIGURASI API
+  console.log(`[Case ${id}] Body JSON:`, bodyVal);
+  console.log(`[Case ${id}] Body JSON:`, responseVal);
+  // 4. KONFIGURASI API
   const createOptions = (data) => ({
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: data || "{}",
   });
 
-  // URL API
-  const urlHeader = `http://localhost:8080/interbank/req/header/case${id}`;
-  const urlBody = `http://localhost:8080/interbank/req/body/case${id}`;
-  const urlResp = `http://localhost:8080/interbank/resp/case${id}`;
+  const urlHeader = `http://localhost:8080/${typeAPI}/req/header/case${id}`;
+  const urlBody = `http://localhost:8080/${typeAPI}/req/body/case${id}`;
+  const urlResp = `http://localhost:8080/${typeAPI}/resp/case${id}`;
 
   try {
-    // 4. HIT 3 API PARALEL
+    // 5. HIT 3 API PARALEL
     const responses = await Promise.all([
       fetch(urlHeader, createOptions(headerVal)),
       fetch(urlBody, createOptions(bodyVal)),
@@ -349,46 +548,59 @@ async function runValidation(id) {
       }))
     );
 
-    // 5. LOGIKA PEWARNAAN TEXT (LOG BOX)
-    // Kita bangun string HTML, bukan string biasa
+    // 6. LOGIKA PEWARNAAN TEXT (LOG BOX)
     let logHtml = "";
-
-    // Variabel untuk cek kesimpulan akhir
     let isAllPassed = true;
 
     results.forEach((item, index) => {
-      const type = ["Header", "Body", "Response"][index]; // Label
-      const currentInput = inputElements[index]; // Input terkait
+      const type = ["Header", "Body", "Response"][index];
+
+      // Tentukan elemen input mana yang harus diwarnai
+      let currentInput;
+      if (index === 0 && isManualMode) {
+        currentInput = manualGroupBox;
+      } else {
+        currentInput = inputElements[index];
+      }
 
       let message = "";
       let colorClass = "";
       let icon = "";
 
-      // Cek Status per Item
       if (item.httpCode === 200 && item.data.status === "OK") {
         // SUKSES
         message = item.data.message;
-        colorClass = "text-success"; // Class Bootstrap untuk Hijau
+        colorClass = "text-success";
         icon = "✅";
+        if (currentInput) currentInput.classList.add("is-valid"); // Tambah border hijau (jika elemen ada)
 
-        // Hijaukan Border Input
-        currentInput.classList.add("is-valid");
+        // Khusus Manual Mode: Jika sukses, kita bisa hilangkan border merah di input kecil-kecil
+        if (index === 0 && isManualMode) {
+          manualGroupBox.classList.remove("border", "border-danger");
+        }
       } else {
         // GAGAL
-        isAllPassed = false; // Tandai ada yang gagal
-        colorClass = "text-danger"; // Class Bootstrap untuk Merah
+        isAllPassed = false;
+        colorClass = "text-danger";
         icon = "❌";
 
         if (item.httpCode === 400) message = "Bad Request";
         else if (item.httpCode === 500) message = "Internal Server Error";
         else message = item.data.message || "Unknown Error";
 
-        // Merahkan Border Input
-        currentInput.classList.add("is-invalid");
+        if (currentInput) currentInput.classList.add("is-invalid"); // Tambah border merah
+
+        // Khusus Manual Mode: Beri highlight merah di container manual jika header gagal
+        if (index === 0 && isManualMode) {
+          manualGroupBox.classList.add(
+            "border",
+            "border-danger",
+            "p-2",
+            "rounded"
+          );
+        }
       }
 
-      // Tambahkan baris log ke HTML
-      // fw-bold agar label tebal, small agar rapi
       logHtml += `
             <div class="${colorClass} mb-1 border-bottom pb-1">
                 <strong>[${type}]</strong> ${icon}<br>
@@ -397,7 +609,7 @@ async function runValidation(id) {
         `;
     });
 
-    // 6. TAMBAHKAN KESIMPULAN (SUMMARY) DI ATAS LOG
+    // 7. SUMMARY
     let summaryHtml = "";
     if (isAllPassed) {
       summaryHtml = `<div class="alert alert-success py-1 fw-bold text-center">RESULT: PASSED</div>`;
@@ -405,7 +617,6 @@ async function runValidation(id) {
       summaryHtml = `<div class="alert alert-danger py-1 fw-bold text-center">RESULT: FAILED</div>`;
     }
 
-    // 7. RENDER KE LAYAR
     resultBox.innerHTML = summaryHtml + logHtml;
   } catch (error) {
     console.error(`[Case ${id}] Error:`, error);
