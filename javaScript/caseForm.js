@@ -1,16 +1,4 @@
-const toggleBtn = document.getElementById("sidebarToggle");
 const body = document.body;
-
-// Fungsi Sidebar Toggle
-if (toggleBtn) {
-  toggleBtn.addEventListener("click", function () {
-    if (window.innerWidth > 768) {
-      body.classList.toggle("sidebar-hidden");
-    } else {
-      body.classList.toggle("sidebar-mobile-show");
-    }
-  });
-}
 
 // Fungsi Auto Resize Textarea (Agar form memanjang otomatis)
 // Kita gunakan 'delegation' agar textarea yang baru digenerate juga kena efeknya
@@ -140,49 +128,6 @@ let currentCategory = "interbank";
 
 // --- DOM ELEMENTS ---
 const container = document.getElementById("testCaseContainer");
-const btnInterbank = document.getElementById("interbankBtn");
-const btnBalance = document.getElementById("balanceBtn");
-
-// // Listener untuk Channel ID Global
-// const partnerId = document.getElementById("partnerId")?.value || "";
-// if (partnerId) {
-//   partnerId.addEventListener("input", function () {
-//     // Cari semua textarea partner ID yang ada di halaman dan update nilainya
-//     document.querySelectorAll('[id^="inputPartnerID_"]').forEach((el) => {
-//       el.value = this.value;
-//     });
-//   });
-// }
-
-// // Listener untuk Channel ID Global
-// const channelId = document.getElementById("channelId").value || "";
-// if (channelId) {
-//   channelId.addEventListener("input", function () {
-//     // Cari semua textarea channel ID yang ada di halaman dan update nilainya
-//     document.querySelectorAll('[id^="inputChannelID_"]').forEach((el) => {
-//       el.value = this.value;
-//     });
-//   });
-// }
-
-// --- EVENT LISTENERS ---
-if (btnInterbank) {
-  btnInterbank.addEventListener("click", function (e) {
-    e.preventDefault();
-    currentCategory = "interbank";
-    pageTitle.innerText = "Interbank Transfer Test";
-    renderTestCases(); // Re-render
-  });
-}
-
-if (btnBalance) {
-  btnBalance.addEventListener("click", function (e) {
-    e.preventDefault();
-    currentCategory = "balance";
-    pageTitle.innerText = "Balance Services Test";
-    renderTestCases(); // Re-render
-  });
-}
 
 // Listener Global Input (Partner & Channel ID)
 // Script ini akan mengupdate semua input case secara otomatis saat Anda mengetik di input global
@@ -244,7 +189,7 @@ function renderTestCases() {
                 Case ${prefix}${item.id}
             </div>
             
-            <div class="col-12 col-md-4 d-flex align-items-center justify-content-left fw-bold mb-3">
+            <div class="col-12 col-md-8 d-flex align-items-center justify-content-left fw-bold mb-3">
             <div class="me-3">
             <label class="form-label fw-bold text-nowrap">Url Endpoint:</label>
             </div>
@@ -413,7 +358,7 @@ function renderTestCases() {
             </div>
 
             <div class="col-12 col-md-2 mb-3">
-                 <label class="form-label fw-bold small">Log:</label>
+                 <label class="form-label fw-bold small">Validate Result:</label>
                  <div id="outputResult_${item.id}" class="form-control bg-light" style="min-height: 120px; height: auto; overflow-y: auto; font-size: 0.8rem;"></div>
             </div>
         </div>
@@ -449,177 +394,5 @@ function toggleMode(id, mode) {
     // Ubah Warna
     btnJson.classList.replace("bg-secondary", "bg-primary");
     btnManual.classList.replace("bg-primary", "bg-secondary");
-  }
-}
-
-async function runValidation(id) {
-  // 1. AMBIL ELEMEN INPUT
-  const jsonHeaderBox = document.getElementById(`inputHeader_${id}`);
-  const manualGroupBox = document.getElementById(`manualInputGroup_${id}`);
-
-  const bodyInputBox = document.getElementById(`inputBody_${id}`);
-  const responseInputBox = document.getElementById(`inputResponse_${id}`);
-
-  const resultBox = document.getElementById(`outputResult_${id}`);
-
-  const inputElements = [jsonHeaderBox, bodyInputBox, responseInputBox];
-
-  // 2. RESET STYLE SEBELUM MULAI
-  // Hapus validasi lama
-  inputElements.forEach((el) => el.classList.remove("is-valid", "is-invalid"));
-  // Hapus juga validasi di dalam manual group (jika ada)
-  manualGroupBox
-    .querySelectorAll("textarea")
-    .forEach((el) => el.classList.remove("is-valid", "is-invalid"));
-
-  // UI Loading
-  resultBox.innerHTML =
-    '<span class="text-primary spinner-border spinner-border-sm"></span> Validating...';
-
-  // 3. LOGIKA PENENTUAN HEADER (MANUAL vs JSON)
-  let headerVal = "";
-
-  // Cek apakah mode JSON sedang sembunyi? (Artinya mode Manual aktif)
-  const isManualMode = jsonHeaderBox.style.display === "none";
-
-  if (isManualMode) {
-    // --- MODE MANUAL: GABUNGKAN FIELD JADI JSON ---
-    // Ambil value dari masing-masing input manual berdasarkan ID uniknya
-    const contentType = document.getElementById(`inputContentType_${id}`).value;
-    const authorization = document.getElementById(
-      `inputAuthorization_${id}`
-    ).value;
-    const timestamp = document.getElementById(`inputTimestamp_${id}`).value;
-    const signature = document.getElementById(`inputSignature_${id}`).value;
-    const partnerID = document.getElementById(`inputPartnerID_${id}`).value;
-    const externalID = document.getElementById(`inputExternalID_${id}`).value;
-    const channelID = document.getElementById(`inputChannelID_${id}`).value;
-
-    // Buat Object JS
-    const headerObj = {
-      "Content-Type": contentType,
-      Authorization: authorization,
-      "X-TIMESTAMP": timestamp,
-      "X-SIGNATURE": signature,
-      "X-PARTNER-ID": partnerID,
-      "X-EXTERNAL-ID": externalID,
-      "CHANNEL-ID": channelID,
-    };
-
-    // Ubah Object jadi String JSON (Pretty Print)
-    headerVal = JSON.stringify(headerObj, null, 2);
-
-    console.log(`[Case ${id}] Generated Header JSON from Manual:`, headerVal);
-  } else {
-    // --- MODE JSON: AMBIL LANGSUNG ---
-    headerVal = jsonHeaderBox.value;
-    console.log(`[Case ${id}] Generated Header JSON from json:`, headerVal);
-  }
-
-  // Ambil Body & Response
-  const bodyVal = bodyInputBox.value;
-  const responseVal = responseInputBox.value;
-
-  console.log(`[Case ${id}] Body JSON:`, bodyVal);
-  console.log(`[Case ${id}] Body JSON:`, responseVal);
-  // 4. KONFIGURASI API
-  const createOptions = (data) => ({
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: data || "{}",
-  });
-
-  const urlHeader = `http://localhost:8080/${typeAPI}/req/header/case${id}`;
-  const urlBody = `http://localhost:8080/${typeAPI}/req/body/case${id}`;
-  const urlResp = `http://localhost:8080/${typeAPI}/resp/case${id}`;
-
-  try {
-    // 5. HIT 3 API PARALEL
-    const responses = await Promise.all([
-      fetch(urlHeader, createOptions(headerVal)),
-      fetch(urlBody, createOptions(bodyVal)),
-      fetch(urlResp, createOptions(responseVal)),
-    ]);
-
-    const results = await Promise.all(
-      responses.map(async (res) => ({
-        httpCode: res.status,
-        data: await res.json(),
-      }))
-    );
-
-    // 6. LOGIKA PEWARNAAN TEXT (LOG BOX)
-    let logHtml = "";
-    let isAllPassed = true;
-
-    results.forEach((item, index) => {
-      const type = ["Header", "Body", "Response"][index];
-
-      // Tentukan elemen input mana yang harus diwarnai
-      let currentInput;
-      if (index === 0 && isManualMode) {
-        currentInput = manualGroupBox;
-      } else {
-        currentInput = inputElements[index];
-      }
-
-      let message = "";
-      let colorClass = "";
-      let icon = "";
-
-      if (item.httpCode === 200 && item.data.status === "OK") {
-        // SUKSES
-        message = item.data.message;
-        colorClass = "text-success";
-        icon = "✅";
-        if (currentInput) currentInput.classList.add("is-valid"); // Tambah border hijau (jika elemen ada)
-
-        // Khusus Manual Mode: Jika sukses, kita bisa hilangkan border merah di input kecil-kecil
-        if (index === 0 && isManualMode) {
-          manualGroupBox.classList.remove("border", "border-danger");
-        }
-      } else {
-        // GAGAL
-        isAllPassed = false;
-        colorClass = "text-danger";
-        icon = "❌";
-
-        if (item.httpCode === 400) message = "Bad Request";
-        else if (item.httpCode === 500) message = "Internal Server Error";
-        else message = item.data.message || "Unknown Error";
-
-        if (currentInput) currentInput.classList.add("is-invalid"); // Tambah border merah
-
-        // Khusus Manual Mode: Beri highlight merah di container manual jika header gagal
-        if (index === 0 && isManualMode) {
-          manualGroupBox.classList.add(
-            "border",
-            "border-danger",
-            "p-2",
-            "rounded"
-          );
-        }
-      }
-
-      logHtml += `
-            <div class="${colorClass} mb-1 border-bottom pb-1">
-                <strong>[${type}]</strong> ${icon}<br>
-                HTTP ${item.httpCode}: ${message}
-            </div>
-        `;
-    });
-
-    // 7. SUMMARY
-    let summaryHtml = "";
-    if (isAllPassed) {
-      summaryHtml = `<div class="alert alert-success py-1 fw-bold text-center">RESULT: PASSED</div>`;
-    } else {
-      summaryHtml = `<div class="alert alert-danger py-1 fw-bold text-center">RESULT: FAILED</div>`;
-    }
-
-    resultBox.innerHTML = summaryHtml + logHtml;
-  } catch (error) {
-    console.error(`[Case ${id}] Error:`, error);
-    resultBox.innerHTML = `<div class="text-danger fw-bold">Connection Error: ${error.message}</div>`;
   }
 }
